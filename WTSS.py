@@ -2,6 +2,9 @@ import networkx as nx
 from tqdm import tqdm
 import random
 
+# Funzione calcolo della ceiling
+def ceildiv(a, b):
+    return -(a // -b)
 def WTSS(G: nx.Graph, t: dict, c: dict, budget: int): # noqa
     """
     Input:
@@ -78,14 +81,14 @@ if __name__ == "__main__":
     G = nx.read_edgelist("data/rete_sociale.txt", delimiter='\t', nodetype=int)
 
     # funzione di costo = grado del nodo / 2
-    cost1 = {v: G.degree(v) // 2 for v in G.nodes()}
+    cost1 = {v: ceildiv(G.degree(v), 2) for v in G.nodes()}
 
     # todo: range da modificare
     # funzione di costo randomica
     cost2 = {v: random.randint(1, 100) for v in G.nodes()}
 
     # funzione di soglia = floor(grado/2)
-    threshold = {v: G.degree(v) // 2 for v in G.nodes()}
+    threshold = {v: ceildiv(G.degree(v), 2) for v in G.nodes()}
 
     nx.set_node_attributes(G, cost1, "cost")
     nx.set_node_attributes(G, threshold, "threshold")
