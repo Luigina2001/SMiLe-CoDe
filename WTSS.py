@@ -5,6 +5,7 @@ import random
 # Funzione calcolo della ceiling
 def ceildiv(a, b):
     return -(a // -b)
+
 def WTSS(G: nx.Graph, t: dict, c: dict, budget: int): # noqa
     """
     Input:
