@@ -132,10 +132,10 @@ if __name__ == "__main__":
 
     # funzione di costo = grado del nodo / 2
     cost1 = {v: ceildiv(G.degree(v), 2) for v in G.nodes()}
-    #print(max([ceildiv(G.degree(v), 2) for v in G.nodes()]))
-    # todo: range da modificare
     # funzione di costo randomica
-    cost2 = {v: random.randint(1, 100) for v in G.nodes()}
+    cost2 = {v: random.randint(1, max(cost1.values())) for v in G.nodes()}
+
+    cost3 = {v: 1 / G.degree(v) for v in G.nodes()}
 
     nx.set_node_attributes(G, cost1, "cost")
 
