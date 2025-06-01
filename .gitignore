@@ -1,5 +1,3 @@
-data
-
 .conda
 
 # Byte-compiled / optimized / DLL files
@@ -72,3 +70,10 @@ target/
 
 # Emacs
 .#*
+
+# Output
+statistiche/*.png
+
+# Datasets
+data/*.txt
+data/*.edgelist
