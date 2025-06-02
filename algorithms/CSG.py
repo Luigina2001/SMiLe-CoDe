@@ -1,11 +1,12 @@
 from typing import Callable
+
 import networkx as nx
 from tqdm import tqdm
 import random
 
+
 def ceildiv(a, b):
     return -(a // -b)
-
 
 def sub_function1(S: set, G: nx.Graph):
     """
@@ -49,6 +50,7 @@ def sub_function2(S: set, G: nx.Graph):
             score += max(half_deg - i + 1, 0)
 
     return score
+
 
 def sub_function3(S: set, G: nx.Graph):
     """
@@ -123,11 +125,13 @@ def cost_seeds_greedy(G: nx.Graph, budget: int, sub_function: Callable):
     return S_selected
 
 if __name__ == "__main__":
-    random.seed(42)
-    G = nx.read_edgelist("data/rete_sociale.txt", delimiter=' ', nodetype=int)
+    G = nx.read_edgelist("../data/rete_sociale.txt", delimiter=' ', nodetype=int)
 
+    # funzione di costo = grado del nodo / 2
     cost1 = {v: ceildiv(G.degree(v), 2) for v in G.nodes()}
+    # funzione di costo randomica
     cost2 = {v: random.randint(1, max(cost1.values())) for v in G.nodes()}
+    # funzione di costo inversa grado del nodo
     cost3 = {v: 1 / G.degree(v) if G.degree(v) > 0 else 1 for v in G.nodes()}
 
     nx.set_node_attributes(G, cost1, "cost")
@@ -137,3 +141,5 @@ if __name__ == "__main__":
     S = cost_seeds_greedy(G, budget_k, sub_function3)
     print("Target set S =", S)
     print("Total cost =", sum(G.nodes[v]["cost"] for v in S))
+
+# todo Salvataggio risultati

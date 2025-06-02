@@ -1,0 +1,2 @@
+timestamp,algorithm_name,cost_function,use_threshold,budget,num_nodes,num_edges,seed_set,num_seeds,total_cost,execution_time,additional_info
+2025-06-02T18:23:47.409428,WTSS,"cost2: random in [1, budget_k]",True,100,4039,88234,"[6, 1105, 1956, 2281, 2421, 2595, 2817, 3037, 3669, 4020]",10,100,2.7607762813568115,"{""note"": ""Esecuzione su facebook_combined.txt""}"
