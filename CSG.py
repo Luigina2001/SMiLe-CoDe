@@ -1,80 +1,77 @@
 from typing import Callable
-
 import networkx as nx
 from tqdm import tqdm
 import random
 
-
 def ceildiv(a, b):
     return -(a // -b)
 
+
 def sub_function1(S: set, G: nx.Graph):
     """
-            Input:
-              - S: target set di nodi di G
-              - G: grafo non orientato (nx.Graph)
-            Output:
-              - score: punteggio assegnato dalla funzione modulare al set S
-            """
-    if S is None or len(S) == 0:
+        Input:
+          - S: target set di nodi di G
+          - G: grafo non orientato (nx.Graph)
+        Output:
+          - score: punteggio assegnato dalla funzione sub-modulare 1 al set S
+    """
+
+    if not S:
         return 0
 
-    V = set(G.nodes)
-    N = {v: set(G.neighbors(v)) for v in V}
     score = 0
-
     for v in G.nodes():
         degree = G.degree(v)
-        cel = ceildiv(degree, 2)
-        intersection_size = len(S.intersection(set(N[v])))
-        score += min(intersection_size, cel)
+        half_deg = ceildiv(degree, 2)
+        neighbors_in_S = len(S & set(G.neighbors(v)))
+        score += min(neighbors_in_S, half_deg)
 
     return score
-
 
 def sub_function2(S: set, G: nx.Graph):
     """
-                Input:
-                  - S: target set di nodi di G
-                  - G: grafo non orientato (nx.Graph)
-                Output:
-                  - score: punteggio assegnato dalla funzione modulare al set S
-                """
-    if S is None or len(S) == 0:
+        Input:
+          - S: target set di nodi di G
+          - G: grafo non orientato (nx.Graph)
+        Output:
+          - score: punteggio assegnato dalla funzione sub-modulare 2 al set S
+    """
+
+    if not S:
         return 0
 
     score = 0
     for v in G.nodes():
-        neighbors_in_D = [u for u in G.neighbors(v) if u in S]
+        neighbors_in_S = [u for u in G.neighbors(v) if u in S]
         half_deg = ceildiv(G.degree(v), 2)
 
-        for i in range(1, len(neighbors_in_D) + 1):
-            term = max(half_deg - i + 1, 0)
-            score += term
-    return score
+        for i in range(1, len(neighbors_in_S) + 1):
+            score += max(half_deg - i + 1, 0)
 
+    return score
 
 def sub_function3(S: set, G: nx.Graph):
     """
-                Input:
-                  - S: target set di nodi di G
-                  - G: grafo non orientato (nx.Graph)
-                Output:
-                  - score: punteggio assegnato dalla funzione modulare al set S
-                """
-    if S is None or len(S) == 0:
+        Input:
+          - S: target set di nodi di G
+          - G: grafo non orientato (nx.Graph)
+        Output:
+          - score: punteggio assegnato dalla funzione sub-modulare 3 al set S
+    """
+    if not S:
         return 0
 
     score = 0
     for v in G.nodes():
-        neighbors_in_D = [u for u in G.neighbors(v) if u in S]
+        neighbors_in_S = [u for u in G.neighbors(v) if u in S]
         half_deg = ceildiv(G.degree(v), 2)
 
-        for i in range(1, len(neighbors_in_D) + 1):
-            term = max((half_deg - i + 1) / (G.degree(v) - i + 1), 0)
-            score += term
-    return score
+        for i in range(1, len(neighbors_in_S) + 1):
+            denom = G.degree(v) - i + 1
+            if denom > 0:
+                score += max((half_deg - i + 1) / denom, 0)
 
+    return score
 
 def cost_seeds_greedy(G: nx.Graph, budget: int, sub_function: Callable):
     """
@@ -84,68 +81,59 @@ def cost_seeds_greedy(G: nx.Graph, budget: int, sub_function: Callable):
           - sub_function: the submodular function chosen (can be sub_function1, sub_function2, sub_function3).
         Output:
           - S: target set con costo totale <= budget
-        """
+    """
+
     if sub_function not in {sub_function1, sub_function2, sub_function3}:
         raise ValueError("sub_function must be one of the allowed sub_functions")
 
-    Sp = set()
-    Sd = set()
-    V = set(G.nodes())
-    cost = 0
+    S_selected = set()
+    total_cost = 0
+    remaining_nodes = set(G.nodes())
 
     pbar = tqdm(total=budget, desc="Cost Seeds Greedy progress")
 
-    def remove_vertex(v):
-        """Rimuove v da V"""
-        V.remove(v)
-        pbar.update(min(budget - cost, G.nodes[v]["cost"]))
+    while total_cost < budget and remaining_nodes:
+        best_v = None
+        best_score = -float('inf')
 
-    """def remove_vertex2():
-        pbar2.update(1)"""
+        current_value = sub_function(S_selected, G)
 
-    while cost < budget:
-        #pbar2 = tqdm(total=len(V), desc="Nodes viewed")
-        def score(v):
-            subSd = sub_function(Sd, G)
-            Sd.add(v)
-            subSd_v = sub_function(Sd, G)
-            value = (subSd_v - subSd) / G.nodes[v]["cost"]
-            Sd.remove(v)
-            #remove_vertex2()
-            return value
+        for v in remaining_nodes:
+            node_cost = G.nodes[v]["cost"]
+            gain = sub_function(S_selected | {v}, G) - current_value
+            value = gain / node_cost
 
-        v = max(V, key=score)
-        #value = (sub_function(Sd.add(v), G) - cost) / G.nodes[v]["cost"]
-        add_cost = G.nodes[v]["cost"]
-        cost += add_cost
-        remove_vertex(v)
+            if value > best_score:
+                best_score = value
+                best_v = v
 
-        Sp = Sd.copy()
-        Sd.add(v)
-        #pbar2.close()
+        if best_v is None:
+            break
+
+        node_cost = G.nodes[best_v]["cost"]
+        if total_cost + node_cost > budget:
+            break
+
+        total_cost += node_cost
+        S_selected.add(best_v)
+        remaining_nodes.remove(best_v)
+        pbar.update(node_cost)
+
     pbar.close()
-    return Sp
-
+    return S_selected
 
 if __name__ == "__main__":
+    random.seed(42)
     G = nx.read_edgelist("data/rete_sociale.txt", delimiter=' ', nodetype=int)
 
-    # funzione di costo = grado del nodo / 2
     cost1 = {v: ceildiv(G.degree(v), 2) for v in G.nodes()}
-    # funzione di costo randomica
     cost2 = {v: random.randint(1, max(cost1.values())) for v in G.nodes()}
-
-    cost3 = {v: 1 / G.degree(v) for v in G.nodes()}
+    cost3 = {v: 1 / G.degree(v) if G.degree(v) > 0 else 1 for v in G.nodes()}
 
     nx.set_node_attributes(G, cost1, "cost")
 
     budget_k = 100
 
-    """for v in set(G.nodes()):
-        print(G.nodes[v]["cost"])"""
-
-    S = cost_seeds_greedy(G, 100, sub_function3)
+    S = cost_seeds_greedy(G, budget_k, sub_function3)
     print("Target set S =", S)
-    print("Total cost =", sum(cost1[v] for v in S))
-
-# todo Salvataggio risultati
+    print("Total cost =", sum(G.nodes[v]["cost"] for v in S))
