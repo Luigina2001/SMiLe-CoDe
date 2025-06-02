@@ -128,7 +128,7 @@ def cost_seeds_greedy(G: nx.Graph, budget: int, sub_function: Callable):
 
 
 if __name__ == "__main__":
-    G = nx.read_edgelist("data/rete_sociale.txt", delimiter=' ', nodetype=int)
+    G = nx.read_edgelist("../data/rete_sociale.txt", delimiter=' ', nodetype=int)
 
     # funzione di costo = grado del nodo / 2
     cost1 = {v: ceildiv(G.degree(v), 2) for v in G.nodes()}

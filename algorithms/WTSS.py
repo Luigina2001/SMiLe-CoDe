@@ -81,7 +81,7 @@ def WTSS(G: nx.Graph, t: dict, c: dict, budget: int):  # noqa
 
 
 if __name__ == "__main__":
-    G = nx.read_edgelist("data/rete_sociale.txt", nodetype=int)
+    G = nx.read_edgelist("../data/facebook_combined.txt", nodetype=int)
 
     budget_k = 10
 

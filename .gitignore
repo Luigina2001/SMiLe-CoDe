@@ -72,7 +72,7 @@ target/
 .#*
 
 # Output
-statistiche/*.png
+statistics/output/*.png
 
 # Datasets
 data/*.txt

@@ -22,7 +22,7 @@ def calcola_statistiche(G):  # noqa
     return degree_dict, deg_centrality, betw, clust
 
 
-def salva_istatogramma_gradi(degree_dict, nome_file="./statistiche/istogramma_gradi.png"):
+def salva_istatogramma_gradi(degree_dict, nome_file="./output/istogramma_gradi.png"):
     gradi = list(degree_dict.values())
     plt.figure()
     plt.hist(gradi, bins=range(min(gradi), max(gradi) + 2), align='left', edgecolor='black')
@@ -34,7 +34,7 @@ def salva_istatogramma_gradi(degree_dict, nome_file="./statistiche/istogramma_gr
     plt.close()
 
 
-def salva_scatter_grado_betweenness(degree_dict, betweenness, nome_file="./statistiche/grado_vs_betweenness.png"):
+def salva_scatter_grado_betweenness(degree_dict, betweenness, nome_file="./output/grado_vs_betweenness.png"):
     nodi = list(degree_dict.keys())
     x = [degree_dict[n] for n in nodi]
     y = [betweenness[n] for n in nodi]
@@ -48,7 +48,7 @@ def salva_scatter_grado_betweenness(degree_dict, betweenness, nome_file="./stati
     plt.close()
 
 
-def salva_istogramma_clustering(clustering, nome_file="./statistiche/istogramma_clustering.png"):
+def salva_istogramma_clustering(clustering, nome_file="./output/istogramma_clustering.png"):
     valori = list(clustering.values())
     plt.figure()
     plt.hist(valori, bins=10, edgecolor='black')
@@ -60,7 +60,7 @@ def salva_istogramma_clustering(clustering, nome_file="./statistiche/istogramma_
     plt.close()
 
 
-def salva_scatter_grado_clustering(degree_dict, clustering, nome_file="./statistiche/grado_vs_clustering.png"):
+def salva_scatter_grado_clustering(degree_dict, clustering, nome_file="./output/grado_vs_clustering.png"):
     nodi = list(degree_dict.keys())
     x = [degree_dict[n] for n in nodi]
     y = [clustering[n] for n in nodi]
@@ -75,7 +75,7 @@ def salva_scatter_grado_clustering(degree_dict, clustering, nome_file="./statist
     plt.close()
 
 
-def salva_visualizzazione_grafo(G, degree_dict, clustering, nome_file="./statistiche/rete_clustering.png"):  # noqa
+def salva_visualizzazione_grafo(G, degree_dict, clustering, nome_file="./output/rete_clustering.png"):  # noqa
     pos = nx.spring_layout(G, seed=42)
     size_list = [degree_dict[n] * 300 for n in G.nodes()]
     cmap_values = [clustering[n] for n in G.nodes()]
@@ -99,7 +99,7 @@ def salva_visualizzazione_grafo(G, degree_dict, clustering, nome_file="./statist
 
 
 def salva_boxplot_metriche(degree_dict, deg_centrality, betweenness, clustering,
-                           nome_file="./statistiche/boxplot_metriche.png"):
+                           nome_file="./output/boxplot_metriche.png"):
     dati = [
         list(degree_dict.values()),
         list(deg_centrality.values()),
@@ -128,7 +128,7 @@ def salva_boxplot_individuale(dati, label, nome_file):
 
 
 def main():
-    G = nx.read_edgelist("data/congress.edgelist", nodetype=int)
+    G = nx.read_edgelist("../data/facebook_combined.txt", nodetype=int)
 
     degree_dict, deg_centrality, betw, clust = calcola_statistiche(G)
 
@@ -140,15 +140,15 @@ def main():
 
     salva_boxplot_metriche(degree_dict, deg_centrality, betw, clust)
 
-    salva_boxplot_individuale(list(degree_dict.values()), "Grado", "./statistiche/boxplot_grado.png")
+    salva_boxplot_individuale(list(degree_dict.values()), "Grado", "output/boxplot_grado.png")
     salva_boxplot_individuale(list(deg_centrality.values()), "Degree Centrality",
-                              "./statistiche/boxplot_deg_centrality.png")
-    salva_boxplot_individuale(list(betw.values()), "Betweenness", "./statistiche/boxplot_betweenness.png")
-    salva_boxplot_individuale(list(clust.values()), "Clustering", "./statistiche/boxplot_clustering.png")
+                              "output/boxplot_deg_centrality.png")
+    salva_boxplot_individuale(list(betw.values()), "Betweenness", "output/boxplot_betweenness.png")
+    salva_boxplot_individuale(list(clust.values()), "Clustering", "output/boxplot_clustering.png")
 
     # nx.write_graphml(G, "rete_con_attributi.graphml")
 
-    print("Analisi completata e file salvati nella cartella statistiche.")
+    print("Analisi completata e file salvati nella cartella output.")
 
 
 if __name__ == "__main__":
