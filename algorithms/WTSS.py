@@ -1,11 +1,13 @@
 import networkx as nx
 from tqdm import tqdm
-import random
+import os
+import sys
+import time
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
 
-
-# Funzione calcolo della ceiling
-def ceildiv(a, b):
-    return -(a // -b)
+from utils.utils import assign_cost_attributes, log_experiment  # noqa
 
 
 def WTSS(G: nx.Graph, t: dict, c: dict, budget: int):  # noqa
@@ -83,23 +85,32 @@ def WTSS(G: nx.Graph, t: dict, c: dict, budget: int):  # noqa
 if __name__ == "__main__":
     G = nx.read_edgelist("../data/facebook_combined.txt", nodetype=int)
 
-    budget_k = 10
+    budget_k = 100
+    algorithm_name = "WTSS"
+    cost_function_desc = "cost2: random in [1, budget_k]"
 
-    # funzione di costo = grado del nodo / 2
-    cost1 = {v: ceildiv(G.degree(v), 2) for v in G.nodes()}
+    G, cost1, cost2, cost3, threshold = assign_cost_attributes(G, budget_k, True)
 
-    # todo: range da modificare
-    # funzione di costo randomica
-    cost2 = {v: random.randint(1, max(cost1.values())) for v in G.nodes()}
-
-    cost3 = {v: 1/G.degree(v) for v in G.nodes()}
-
-    # funzione di soglia = floor(grado/2)
-    threshold = {v: G.degree(v) // 2 for v in G.nodes()}
-
-    nx.set_node_attributes(G, cost2, "cost")
-    nx.set_node_attributes(G, threshold, "threshold")
-
+    start_time = time.time()
     S = WTSS(G, threshold, cost2, budget_k)
+    end_time = time.time()
+
+    total_cost = sum(cost2[v] for v in S)
+    exec_time = end_time - start_time
+
     print("Target set S =", S)
-    print("Total cost =", sum(cost2[v] for v in S))
+    print("Total cost =", total_cost)
+    print(f"Execution time: {exec_time:.2f} secondi")
+
+    log_experiment(
+        csv_path="./logs/experiment_results.csv",
+        algorithm_name=algorithm_name,
+        cost_function=cost_function_desc,
+        use_threshold=True,
+        budget=budget_k,
+        seed_set=S,
+        total_cost=total_cost,
+        execution_time=exec_time,
+        G=G,
+        additional_info={"note": "Esecuzione su facebook_combined.txt"}
+    )
