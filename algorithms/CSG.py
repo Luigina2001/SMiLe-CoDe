@@ -2,11 +2,10 @@ from typing import Callable
 
 import networkx as nx
 from tqdm import tqdm
-import random
+import time
 
+from utils.utils import log_experiment, assign_cost_attributes, ceil_division
 
-def ceildiv(a, b):
-    return -(a // -b)
 
 def sub_function1(S: set, G: nx.Graph):
     """
@@ -23,7 +22,7 @@ def sub_function1(S: set, G: nx.Graph):
     score = 0
     for v in G.nodes():
         degree = G.degree(v)
-        half_deg = ceildiv(degree, 2)
+        half_deg = ceil_division(degree, 2)
         neighbors_in_S = len(S & set(G.neighbors(v)))
         score += min(neighbors_in_S, half_deg)
 
@@ -44,7 +43,7 @@ def sub_function2(S: set, G: nx.Graph):
     score = 0
     for v in G.nodes():
         neighbors_in_S = [u for u in G.neighbors(v) if u in S]
-        half_deg = ceildiv(G.degree(v), 2)
+        half_deg = ceil_division(G.degree(v), 2)
 
         for i in range(1, len(neighbors_in_S) + 1):
             score += max(half_deg - i + 1, 0)
@@ -66,7 +65,7 @@ def sub_function3(S: set, G: nx.Graph):
     score = 0
     for v in G.nodes():
         neighbors_in_S = [u for u in G.neighbors(v) if u in S]
-        half_deg = ceildiv(G.degree(v), 2)
+        half_deg = ceil_division(G.degree(v), 2)
 
         for i in range(1, len(neighbors_in_S) + 1):
             denom = G.degree(v) - i + 1
@@ -75,7 +74,7 @@ def sub_function3(S: set, G: nx.Graph):
 
     return score
 
-def cost_seeds_greedy(G: nx.Graph, budget: int, sub_function: Callable):
+def cost_seeds_greedy(G: nx.Graph, budget: int, cost_type: str, sub_function: Callable):
     """
         Input:
           - G: grafo non orientato (nx.Graph)
@@ -94,14 +93,20 @@ def cost_seeds_greedy(G: nx.Graph, budget: int, sub_function: Callable):
 
     pbar = tqdm(total=budget, desc="Cost Seeds Greedy progress")
 
+    # Ciclo aggiunta nodi
     while total_cost < budget and remaining_nodes:
+        # Miglior nodo dell'iterazione e il suo score
         best_v = None
         best_score = -float('inf')
 
+        # Valore della funzione submodulare del seed set alla attuale iterazione
         current_value = sub_function(S_selected, G)
 
+        # Ciclo per scegliere il nodo con lo score miglire
         for v in remaining_nodes:
-            node_cost = G.nodes[v]["cost"]
+            node_cost = G.nodes[v][cost_type]
+
+            # value rappresenta lo score del nodo da confrontare con gli altri
             gain = sub_function(S_selected | {v}, G) - current_value
             value = gain / node_cost
 
@@ -112,7 +117,8 @@ def cost_seeds_greedy(G: nx.Graph, budget: int, sub_function: Callable):
         if best_v is None:
             break
 
-        node_cost = G.nodes[best_v]["cost"]
+        # Calcolo costo del nodo. Se tale costo fa superare il budget il nodo non viene aggiunto al seed set
+        node_cost = G.nodes[best_v][cost_type]
         if total_cost + node_cost > budget:
             break
 
@@ -125,21 +131,34 @@ def cost_seeds_greedy(G: nx.Graph, budget: int, sub_function: Callable):
     return S_selected
 
 if __name__ == "__main__":
-    G = nx.read_edgelist("../data/rete_sociale.txt", delimiter=' ', nodetype=int)
-
-    # funzione di costo = grado del nodo / 2
-    cost1 = {v: ceildiv(G.degree(v), 2) for v in G.nodes()}
-    # funzione di costo randomica
-    cost2 = {v: random.randint(1, max(cost1.values())) for v in G.nodes()}
-    # funzione di costo inversa grado del nodo
-    cost3 = {v: 1 / G.degree(v) if G.degree(v) > 0 else 1 for v in G.nodes()}
-
-    nx.set_node_attributes(G, cost1, "cost")
+    G = nx.read_edgelist("../data/facebook_combined.txt", nodetype=int)
 
     budget_k = 100
+    algorithm_name = "CSG"
+    cost_function_desc = "cost1: ceiling function of degree(v) / 2"
 
-    S = cost_seeds_greedy(G, budget_k, sub_function3)
+    G, cost1, cost2, cost3, threshold = assign_cost_attributes(G, budget_k, True)
+
+    start_time = time.time()
+    S = cost_seeds_greedy(G, budget_k, "cost1", sub_function1)
+    end_time = time.time()
+
+    total_cost = sum(cost1[v] for v in S)
+    exec_time = end_time - start_time
+
     print("Target set S =", S)
-    print("Total cost =", sum(G.nodes[v]["cost"] for v in S))
+    print("Total cost =", total_cost)
+    print(f"Execution time: {exec_time:.2f} secondi")
 
-# todo Salvataggio risultati
+    log_experiment(
+        csv_path="./logs/experiment_results.csv",
+        algorithm_name=algorithm_name,
+        cost_function=cost_function_desc,
+        use_threshold=False,
+        budget=budget_k,
+        seed_set=S,
+        total_cost=total_cost,
+        execution_time=exec_time,
+        G=G,
+        additional_info={"note": "Esecuzione su facebook_combined.txt"}
+    )
