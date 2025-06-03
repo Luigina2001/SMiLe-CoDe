@@ -62,10 +62,17 @@ def WTSS(G: nx.Graph, t: dict, c: dict, budget: int):  # noqa
             # Case 2: the vertex v is added to S, since no sufficient neighbors remain in U to activate it;
             # v can then influence its neighbors in U
             v = impossible[0]
-            if total_cost + c[v] <= budget:
+            if total_cost + c[v] < budget:
                 S.add(v)
                 total_cost += c[v]
                 print(f"Total cost = {total_cost}")
+            elif total_cost + c[v] == budget:  # possibile in quanto non ci sono nodi con costo uguale a zero
+                S.add(v)
+                total_cost += c[v]
+                print(f"Total cost = {total_cost}")
+                print(f"BREAK: {total_cost} = {budget}")
+                pbar.close()
+                return S
             for u in N[v]:
                 k[u] = max(0, k[u] - 1)  # riduco la threshold dei vicini
             remove_vertex(v)
@@ -85,17 +92,17 @@ def WTSS(G: nx.Graph, t: dict, c: dict, budget: int):  # noqa
 if __name__ == "__main__":
     G = nx.read_edgelist("../data/facebook_combined.txt", nodetype=int)
 
-    budget_k = 100
+    budget_k = 1000
     algorithm_name = "WTSS"
-    cost_function_desc = "cost2: random in [1, budget_k]"
+    cost_function_desc = "cost1: ceiling function of degree(v) / 2"
 
     G, cost1, cost2, cost3, threshold = assign_cost_attributes(G, budget_k, True)
 
     start_time = time.time()
-    S = WTSS(G, threshold, cost2, budget_k)
+    S = WTSS(G, threshold, cost1, budget_k)
     end_time = time.time()
 
-    total_cost = sum(cost2[v] for v in S)
+    total_cost = sum(cost1[v] for v in S)
     exec_time = end_time - start_time
 
     print("Target set S =", S)

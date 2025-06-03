@@ -91,3 +91,45 @@ def log_experiment(csv_path: str, algorithm_name: str, cost_function: str, use_t
         if is_new_file:
             writer.writeheader()
         writer.writerow(row)
+
+
+def log_cascade(csv_path: str, algorithm_name: str, seed_set_str: str, seed_size: int, final_influence_size: int,
+                final_influence: Set[int], execution_time: float, experiment_result_row: int,
+                G: Optional[nx.Graph] = None, additional_info: Optional[Dict[str, Any]] = None) -> None:  # noqa
+
+    headers = [
+        "timestamp",
+        "algorithm_name",
+        "seed_set",
+        "seed_size",
+        "final_influence",
+        "final_influence_size",
+        "num_nodes",
+        "num_edges",
+        "experiment_result_row",
+        "execution_time",
+        "additional_info"
+    ]
+
+    is_new_file = not os.path.exists(csv_path)
+    mode = "a" if not is_new_file else "w"
+
+    row = {
+        "timestamp": __import__("datetime").datetime.now().isoformat(),
+        "algorithm_name": algorithm_name,
+        "seed_set": seed_set_str,
+        "seed_size": seed_size,
+        "final_influence":  json.dumps(sorted(final_influence)),
+        "final_influence_size": final_influence_size,
+        "num_nodes": G.number_of_nodes() if G is not None else "",
+        "num_edges": G.number_of_edges() if G is not None else "",
+        "execution_time": execution_time,
+        "experiment_result_row": experiment_result_row,
+        "additional_info": json.dumps(additional_info) if additional_info else ""
+    }
+
+    with open(csv_path, mode, newline="", encoding="utf-8") as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=headers)
+        if is_new_file:
+            writer.writeheader()
+        writer.writerow(row)
