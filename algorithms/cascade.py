@@ -54,19 +54,19 @@ def majority_cascade(G, S):  # noqa
         pbar.update()
 
     pbar.close()
-    return influenced  # Inf[S,t]=Inf[S,t+1]
+    return influenced, r  # Inf[S,t]=Inf[S,t+1]
 
 
 if __name__ == "__main__":
     G = nx.read_edgelist("../data/facebook_combined.txt", nodetype=int)
 
     # Lettura del seed set dal CSV (da riga zero a n-1)
-    csv_experiment_row = 3
+    csv_experiment_row = 35
     seed_set = leggi_seed_set("./logs/experiment_results.csv", csv_experiment_row)
 
     # Majority cascade
     start_time = time.time()
-    final_influence = majority_cascade(G, seed_set)
+    final_influence, round = majority_cascade(G, seed_set)  # noqa
     end_time = time.time()
 
     # print(final_influence.difference(seed_set))
@@ -82,6 +82,7 @@ if __name__ == "__main__":
         final_influence_size=len(final_influence),
         execution_time=end_time - start_time,
         experiment_result_row=csv_experiment_row+1,
+        round=round,
         G=G,
         additional_info={"note": "Esecuzione Majority Cascade su facebook_combined.txt"}
     )
