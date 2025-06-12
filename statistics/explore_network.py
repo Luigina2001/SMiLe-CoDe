@@ -1,4 +1,5 @@
 import snap # noqa
+import networkx as nx
 
 
 # Caricamento del grafo
@@ -9,6 +10,14 @@ G = snap.LoadEdgeList(snap.PUNGraph, "../data/facebook_combined.txt", 0, 1, ' ')
 print(" ============= Network Statistics =============")
 print(f"Nodes: {G.GetNodes()}")
 print(f"Edges: {G.GetEdges()}")
+
+if nx.is_tree(G):
+    print("The network G is a tree\n")
+elif nx.is_connected(G) and G.number_of_edges() == G.number_of_nodes() * (G.number_of_nodes() - 1) // 2:
+    print("The network G is a clique\n")
+elif nx.is_connected(G) and all(deg == 2 for _, deg in G.degree()):
+    print("The network G is a loop\n")
+
 
 # Largest WCC e SCC (per grafi non orientati coincidono)
 MxWcc = G.GetMxWcc()
