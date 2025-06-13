@@ -1,7 +1,4 @@
 import networkx as nx
-import math
-
-from utils.utils import log_experiment, assign_cost_attributes, ceil_division
 
 G = nx.read_edgelist("../data/facebook_combined.txt", nodetype=int)
 
@@ -15,4 +12,4 @@ G_removed = G.copy()
 for t in set_LB:
     G_removed.remove_edge(t[0], t[1])
 
-nx.write_edgelist(G_removed, "../data/no_bridge.txt", comments='#', delimiter=' ', data=True, encoding='utf-8')
+nx.write_edgelist(G_removed, "../data/no_bridge.txt")

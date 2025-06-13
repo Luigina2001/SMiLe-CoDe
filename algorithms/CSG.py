@@ -133,32 +133,68 @@ def cost_seeds_greedy(G: nx.Graph, budget: int, cost_type: str, sub_function: Ca
 if __name__ == "__main__":
     G = nx.read_edgelist("../data/facebook_combined.txt", nodetype=int)
 
-    budget_k = 100
-    algorithm_name = "CSG"
-    cost_function_desc = "cost1: ceiling function of degree(v) / 2"
+    G, cost1, cost2, cost3 = assign_cost_attributes(G, use_threshold=False)
 
-    G, cost1, cost2, cost3, threshold = assign_cost_attributes(G, budget_k, True)
+    # Configurazioni funzioni di costo e relative descrizioni
+    cost_functions = {
+        "cost1": cost1,
+        "cost2": cost2,
+        "cost3": cost3
+    }
 
-    start_time = time.time()
-    S = cost_seeds_greedy(G, budget_k, "cost1", sub_function1)
-    end_time = time.time()
+    descriptions = {
+        "cost1": "cost1: ceiling function of degree(v) / 2",
+        "cost2": "cost2: random int in [min(cost1), max(cost1)]",
+        "cost3": "cost3: scaled log10 of betweenness centrality"
+    }
 
-    total_cost = sum(cost1[v] for v in S)
-    exec_time = end_time - start_time
+    for name, cost in cost_functions.items():
+        algorithm_name = "CSG"
+        cost_function_desc = descriptions[name]
 
-    print("Target set S =", S)
-    print("Total cost =", total_cost)
-    print(f"Execution time: {exec_time:.2f} secondi")
+        # Calcolo range del budget
+        min_budget = int(max(cost.values()))
+        if int(min(cost.values())) > 0:
+            max_budget = int(min(cost.values()) * (len(G.nodes())))
+        else:
+            max_budget = (int(min(cost.values()) + 1) * (len(G.nodes())))
 
-    log_experiment(
-        csv_path="./logs/experiment_results.csv",
-        algorithm_name=algorithm_name,
-        cost_function=cost_function_desc,
-        use_threshold=False,
-        budget=budget_k,
-        seed_set=S,
-        total_cost=total_cost,
-        execution_time=exec_time,
-        G=G,
-        additional_info={"note": "Esecuzione su facebook_combined.txt"}
-    )
+        if min_budget > max_budget:
+            print(f"MinBudget > MaxBudget for {name}")
+            min_budget, max_budget = max_budget, min_budget
+
+        if min_budget == max_budget:
+            print(f"MinBudget = MaxBudget for {name}")
+            continue
+
+        print(f"\n{name} — budget from {min_budget} to {max_budget}")
+
+        for budget_k in tqdm(
+                range(min_budget, max_budget + 1, 100),
+                desc=f"Budget loop for {name}",
+                unit="budget"
+        ):
+            start_time = time.time()
+            S = cost_seeds_greedy(G, budget_k, name, sub_function1)
+            end_time = time.time()
+
+            total_cost = sum(cost[v] for v in S)
+            exec_time = end_time - start_time
+
+            print(f"\nFunction: {name} | Budget: {budget_k}")
+            print(f"Target set size: {len(S)}")
+            print(f"Total cost: {total_cost}")
+            print(f"Execution time: {exec_time:.2f} seconds")
+
+            log_experiment(
+                csv_path="./logs/prova_centrality.csv",
+                algorithm_name=algorithm_name,
+                cost_function=cost_function_desc,
+                use_threshold=False,
+                budget=budget_k,
+                seed_set=S,
+                total_cost=total_cost,
+                execution_time=exec_time,
+                G=G,
+                additional_info={"note": f"Running on facebook_combined.txt with {name}"}
+            )
