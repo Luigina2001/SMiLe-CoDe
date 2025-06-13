@@ -1,0 +1,22 @@
+============= Network Statistics =============
+Nodes: 4039
+Edges: 88234
+
+Nodes in largest WCC: 4039 (1.000)
+Edges in largest WCC: 88234 (1.000)
+Nodes in largest SCC: 4039 (1.000)
+Edges in largest SCC: 88234 (1.000)
+
+Average clustering coefficient: 0.6055
+Number of triangles: 1612010
+Fraction of closed triangles: 0.519174
+
+Diameter (longest shortest path): 8
+90-percentile effective diameter: 4.7
+
+ ============= Community Statistics =============
+Number of communities: 18
+Average community size: 224.39
+Average membership size (nodes per community): 1.00
+Modularity: 0.7754
+
