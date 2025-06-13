@@ -1,10 +1,14 @@
-import random
 import os
 import csv
 import json
-from typing import Dict, Set, Optional, Any
+import math
+import random
+from tqdm import tqdm
 import networkx as nx
-from networkx import Graph
+from typing import Dict, Set, Optional, Any
+
+# Percorso del file di salvataggio centralità
+CENTRALITY_FILE = "./facebook_betweenness.json"
 
 
 def ceil_division(numerator: int, denominator: int) -> int:
@@ -13,38 +17,57 @@ def ceil_division(numerator: int, denominator: int) -> int:
     return -(numerator // -denominator)
 
 
-def assign_cost_attributes(G: Graph, random_max_range: int, use_threshold: bool ):  # noqa
-
-    if random_max_range < 1:
-        raise ValueError("random_max_range must be at least 1.")
-
+def assign_cost_attributes(G: nx.Graph, use_threshold: bool):  # noqa
     cost1: Dict[int, int] = {}
     cost2: Dict[int, int] = {}
     cost3: Dict[int, float] = {}
 
-    for v in G.nodes():
+    for v in tqdm(G.nodes(), desc="Calculating cost1"):
         degree_v = G.degree(v)
-        if degree_v == 0:
-            ceil_cost = 0
-            inv_cost = 0.0
-        else:
-            ceil_cost = ceil_division(degree_v, 2)
-            inv_cost = 1.0 / degree_v
-
+        ceil_cost = ceil_division(degree_v, 2) if degree_v > 0 else 0
         cost1[v] = ceil_cost
-        cost2[v] = random.randint(1, random_max_range)
-        cost3[v] = inv_cost
+
+    random_min_range = min(cost1.values())
+    random_max_range = max(cost1.values())
+
+    for v in tqdm(G.nodes(), desc="Assigning random cost2"):
+        cost2[v] = random.randint(random_min_range, random_max_range)
+
+    if os.path.exists(CENTRALITY_FILE):
+        print("Loading centrality from file...")
+        with open(CENTRALITY_FILE, "r") as f:
+            centrality = {int(k): float(v) for k, v in json.load(f).items()}
+    else:
+        print("Computing centrality...")
+        centrality = nx.betweenness_centrality(G)
+        with open(CENTRALITY_FILE, "w") as f:
+            json.dump(centrality, f)
+        print("Centrality saved on disk.")
+    epsilon = 1e-6
+
+    log_centrality = {
+        v: math.log10(centrality[v] + epsilon)
+        for v in tqdm(G.nodes(), desc="Computing log centrality")
+    }
+
+    min_log = min(log_centrality.values())
+    shifted_log_centrality = {
+        v: log_centrality[v] - min_log
+        for v in tqdm(G.nodes(), desc="Shifting log values")
+    }
+
+    scale = random_max_range / max(shifted_log_centrality.values()) if max(shifted_log_centrality.values()) > 0 else 1.0
+    for v in tqdm(G.nodes(), desc="Finalizing cost3"):
+        cost3[v] = shifted_log_centrality[v] * scale
 
     nx.set_node_attributes(G, cost1, "cost1")
     nx.set_node_attributes(G, cost2, "cost2")
     nx.set_node_attributes(G, cost3, "cost3")
 
     if use_threshold:
-        # Reuse the same values as cost1 for the threshold attribute
-        nx.set_node_attributes(G, cost1, "threshold")
-
-    if use_threshold:
-        return G, cost1, cost2, cost3, cost1
+        threshold = cost1.copy()
+        nx.set_node_attributes(G, threshold, "threshold")
+        return G, cost1, cost2, cost3, threshold
     else:
         return G, cost1, cost2, cost3
 
@@ -94,7 +117,7 @@ def log_experiment(csv_path: str, algorithm_name: str, cost_function: str, use_t
 
 
 def log_cascade(csv_path: str, algorithm_name: str, seed_set_str: str, seed_size: int, final_influence_size: int,
-                final_influence: Set[int], execution_time: float, experiment_result_row: int,
+                final_influence: Set[int], execution_time: float, experiment_result_row: int, round: int,  # noqa
                 G: Optional[nx.Graph] = None, additional_info: Optional[Dict[str, Any]] = None) -> None:  # noqa
 
     headers = [
@@ -108,6 +131,7 @@ def log_cascade(csv_path: str, algorithm_name: str, seed_set_str: str, seed_size
         "num_edges",
         "experiment_result_row",
         "execution_time",
+        "round",
         "additional_info"
     ]
 
@@ -125,6 +149,7 @@ def log_cascade(csv_path: str, algorithm_name: str, seed_set_str: str, seed_size
         "num_edges": G.number_of_edges() if G is not None else "",
         "execution_time": execution_time,
         "experiment_result_row": experiment_result_row,
+        "round": round,
         "additional_info": json.dumps(additional_info) if additional_info else ""
     }
 
