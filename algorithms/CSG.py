@@ -118,7 +118,7 @@ def cost_seeds_greedy(
 
     epsilon = 1e-6
     # Ciclo aggiunta nodi
-    with tqdm(total=budget, desc="Cost Seeds Greedy", unit="cost") as pbar:
+    with tqdm(total=budget, initial=current_cost, desc="Cost Seeds Greedy", unit="cost") as pbar:
         while total_cost < budget and remaining_nodes:
             best_v = None  # Miglior nodo dell'iterazione e il suo score
             best_score = -float('inf')
@@ -215,7 +215,7 @@ if __name__ == "__main__":
             tqdm.write(f"Seed set size: {len(S)}; Total cost: {total_cost}; Time: {exec_time:.2f}s")
 
             log_experiment(
-                csv_path="./logs/cost3_CSG.csv",
+                csv_path=f"./logs/{name}_CSG.csv",
                 algorithm_name=algorithm_name,
                 cost_function=cost_function_desc,
                 use_threshold=False,
