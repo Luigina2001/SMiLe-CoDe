@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Callable, Union, Optional, Set
 
 import networkx as nx
 from tqdm import tqdm
@@ -74,12 +74,21 @@ def sub_function3(S: set, G: nx.Graph):
 
     return score
 
-def cost_seeds_greedy(G: nx.Graph, budget: int, cost_type: str, sub_function: Callable):
+def cost_seeds_greedy(
+    G: nx.Graph,
+    budget: Union[int, float],
+    cost_type: str,
+    sub_function: Callable,
+    initial_seed_set: Optional[Set] = None,
+    current_cost: Union[int, float] = 0
+):
     """
         Input:
           - G: grafo non orientato (nx.Graph)
           - budget: somma dei costi del seed set massima totale ammissibile
-          - sub_function: the submodular function chosen (can be sub_function1, sub_function2, sub_function3).
+          - sub_function: the submodular function chosen (can be sub_function1, sub_function2, sub_function3)
+          - initial_seed_set: seed set iniziale da cui partire
+          - current_cost: costo del seed set iniziale.
         Output:
           - S: target set con costo totale <= budget
     """
@@ -87,9 +96,13 @@ def cost_seeds_greedy(G: nx.Graph, budget: int, cost_type: str, sub_function: Ca
     if sub_function not in {sub_function1, sub_function2, sub_function3}:
         raise ValueError("sub_function must be one of the allowed sub_functions")
 
-    S_selected = set()
-    total_cost = 0
     remaining_nodes = set(G.nodes())
+    total_cost = current_cost
+    if initial_seed_set is None:
+        S_selected = set()
+    else:
+        S_selected = initial_seed_set
+        remaining_nodes -= initial_seed_set
 
     pbar = tqdm(total=budget, desc="Cost Seeds Greedy progress")
 
@@ -169,16 +182,22 @@ if __name__ == "__main__":
 
         print(f"\n{name} — budget from {min_budget} to {max_budget}")
 
+        current_seed_set = None
+        current_cost = 0
+
         for budget_k in tqdm(
                 range(min_budget, max_budget + 1, 100),
                 desc=f"Budget loop for {name}",
                 unit="budget"
         ):
             start_time = time.time()
-            S = cost_seeds_greedy(G, budget_k, name, sub_function1)
+            S = cost_seeds_greedy(G, budget_k, name, sub_function1, current_seed_set, current_cost)
             end_time = time.time()
 
             total_cost = sum(cost[v] for v in S)
+            current_seed_set = S
+            current_cost = total_cost
+
             exec_time = end_time - start_time
 
             print(f"\nFunction: {name} | Budget: {budget_k}")
