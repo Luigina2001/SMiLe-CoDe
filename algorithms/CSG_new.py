@@ -229,11 +229,11 @@ if __name__ == "__main__":
 
         # Calcolo range del budget
         min_budget = int(max(cost.values()))
-        if int(min(cost.values())) > 0:
+        """if int(min(cost.values())) > 0:
             max_budget = int(min(cost.values()) * (len(G.nodes())))
         else:
-            max_budget = (int(min(cost.values()) + 1) * (len(G.nodes())))
-
+            max_budget = (int(min(cost.values()) + 1) * (len(G.nodes())))"""
+        max_budget = int(sum(cost.values()))
         if min_budget > max_budget:
             print(f"MinBudget > MaxBudget for {name}")
             min_budget, max_budget = max_budget, min_budget

@@ -56,7 +56,7 @@ def majority_cascade(G, S):  # noqa
     pbar.close()
     return influenced, r  # Inf[S,t]=Inf[S,t+1]
 
-
+"""
 if __name__ == "__main__":
     G = nx.read_edgelist("../data/facebook_combined.txt", nodetype=int)
 
@@ -74,7 +74,7 @@ if __name__ == "__main__":
 
     # Log dei dati
     log_cascade(
-        csv_path='./logs/cascade_results.csv',
+        csv_path='logs/cascade_results/cascade_results.csv',
         algorithm_name="MajorityCascade",
         seed_set_str=str(sorted(seed_set)),
         seed_size=len(seed_set),
@@ -88,3 +88,45 @@ if __name__ == "__main__":
     )
 
     print(f"Esecuzione completata. Nodi influenzati: {len(final_influence)}")
+"""
+if __name__ == "__main__":
+    G = nx.read_edgelist("../data/facebook_combined.txt", nodetype=int)
+
+    # Path to the experiment results CSV
+    experiment_csv_path = "./logs/cost1_CSG.csv"
+
+    # Get the total number of rows in the CSV
+    with open(experiment_csv_path, 'r') as f:
+        total_rows = sum(1 for line in f) - 1  # Subtract header row
+
+    # Loop through each row in the CSV (0 to total_rows-1)
+    for csv_experiment_row in range(total_rows):
+        try:
+            # Read the seed set for the current row
+            seed_set = leggi_seed_set(experiment_csv_path, csv_experiment_row)
+
+            # Majority cascade
+            start_time = time.time()
+            final_influence, round = majority_cascade(G, seed_set)  # noqa
+            end_time = time.time()
+
+            # Log the cascade data
+            log_cascade(
+                csv_path='logs/cascade_results/cost1_CSG_results.csv',
+                algorithm_name="MajorityCascade",
+                seed_set_str=str(sorted(seed_set)),
+                seed_size=len(seed_set),
+                final_influence=final_influence,
+                final_influence_size=len(final_influence),
+                execution_time=end_time - start_time,
+                experiment_result_row=csv_experiment_row + 1,
+                round=round,
+                G=G,
+                additional_info={"note": "Esecuzione Majority Cascade su facebook_combined.txt"}
+            )
+
+            print(f"Row {csv_experiment_row} completata. Nodi influenzati: {len(final_influence)}")
+
+        except Exception as e:
+            print(f"Errore durante l'elaborazione della riga {csv_experiment_row}: {str(e)}")
+            continue  # Continue to next row if there's an error
