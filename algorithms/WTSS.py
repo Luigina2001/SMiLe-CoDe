@@ -146,7 +146,7 @@ if __name__ == "__main__":
             print(f"Execution time: {exec_time:.2f} seconds")
 
             log_experiment(
-                csv_path="./logs/prova_centrality.csv",
+                csv_path=f"./logs/{name}_WTSS.csv",
                 algorithm_name=algorithm_name,
                 cost_function=cost_function_desc,
                 use_threshold=True,
