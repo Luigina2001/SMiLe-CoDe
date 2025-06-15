@@ -86,6 +86,17 @@ def cost_seeds_greedy(
         initial_seed_set: Optional[Set] = None,
         current_cost: Union[int, float] = 0
 ) -> Set[int]:
+    """
+            Input:
+              - G: grafo non orientato (nx.Graph)
+              - budget: somma dei costi del seed set massima totale ammissibile
+              - cost_type: stringa contentente il tipo di costo scelto tra quelli proposti,
+              - sub_function: the submodular function chosen (can be sub_function1, sub_function2, sub_function3)
+              - initial_seed_set: seed set iniziale da cui partire
+              - current_cost: costo del seed set iniziale.
+            Output:
+              - S: target set con costo totale <= budget
+        """
     """Versione ottimizzata con aggiornamento incrementale e heap."""
     if sub_function not in {sub_function1, sub_function2, sub_function3}:
         raise ValueError("Funzione submodulare non supportata")
@@ -200,14 +211,14 @@ if __name__ == "__main__":
 
     # Configurazioni funzioni di costo e relative descrizioni
     cost_functions = {
-        # "cost1": cost1,
-        # "cost2": cost2,
+        "cost1": cost1,
+        "cost2": cost2,
         "cost3": cost3
     }
 
     descriptions = {
-        # "cost1": "cost1: ceiling function of degree(v) / 2",
-        # "cost2": "cost2: random int in [min(cost1), max(cost1)]",
+        "cost1": "cost1: ceiling function of degree(v) / 2",
+        "cost2": "cost2: random int in [min(cost1), max(cost1)]",
         "cost3": "cost3: scaled log10 of betweenness centrality"
     }
 

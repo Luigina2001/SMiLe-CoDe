@@ -160,14 +160,14 @@ if __name__ == "__main__":
 
     # Configurazioni funzioni di costo e relative descrizioni
     cost_functions = {
-        # "cost1": cost1,
-        # "cost2": cost2,
+        "cost1": cost1,
+        "cost2": cost2,
         "cost3": cost3
     }
 
     descriptions = {
-        # "cost1": "cost1: ceiling function of degree(v) / 2",
-        # "cost2": "cost2: random int in [min(cost1), max(cost1)]",
+        "cost1": "cost1: ceiling function of degree(v) / 2",
+        "cost2": "cost2: random int in [min(cost1), max(cost1)]",
         "cost3": "cost3: scaled log10 of betweenness centrality"
     }
 
