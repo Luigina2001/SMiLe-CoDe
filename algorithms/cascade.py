@@ -56,6 +56,7 @@ def majority_cascade(G, S):  # noqa
     pbar.close()
     return influenced, r  # Inf[S,t]=Inf[S,t+1]
 
+
 """
 if __name__ == "__main__":
     G = nx.read_edgelist("../data/facebook_combined.txt", nodetype=int)
@@ -89,6 +90,7 @@ if __name__ == "__main__":
 
     print(f"Esecuzione completata. Nodi influenzati: {len(final_influence)}")
 """
+
 if __name__ == "__main__":
     G = nx.read_edgelist("../data/facebook_combined.txt", nodetype=int)
 

@@ -13,7 +13,7 @@ if project_root not in sys.path:
 from utils.utils import log_experiment, assign_cost_attributes, ceil_division  # noqa
 
 
-def sub_function1(S: set, G: nx.Graph) -> float:
+def sub_function1(S: set, G: nx.Graph) -> float:  # noqa
     """Versione ottimizzata senza loop annidati."""
     if not S:
         return 0
@@ -26,7 +26,7 @@ def sub_function1(S: set, G: nx.Graph) -> float:
     return score
 
 
-def sub_function2(S: set, G: nx.Graph) -> float:
+def sub_function2(S: set, G: nx.Graph) -> float:  # noqa
     """Ottimizzata con formula matematica."""
     if not S:
         return 0
@@ -43,7 +43,7 @@ def sub_function2(S: set, G: nx.Graph) -> float:
     return score
 
 
-def sub_function3(S: set, G: nx.Graph) -> float:
+def sub_function3(S: set, G: nx.Graph) -> float:  # noqa
     """Ottimizzata riducendo loop interni."""
     if not S:
         return 0
@@ -79,25 +79,25 @@ def compute_delta(
 
 
 def cost_seeds_greedy(
-        G: nx.Graph,
+        G: nx.Graph,  # noqa
         budget: Union[int, float],
         cost_type: str,
         sub_function: Callable,
         initial_seed_set: Optional[Set] = None,
-        current_cost: Union[int, float] = 0
+        current_cost: Union[int, float] = 0  # noqa
 ) -> Set[int]:
     """
-            Input:
-              - G: grafo non orientato (nx.Graph)
-              - budget: somma dei costi del seed set massima totale ammissibile
-              - cost_type: stringa contentente il tipo di costo scelto tra quelli proposti,
-              - sub_function: the submodular function chosen (can be sub_function1, sub_function2, sub_function3)
-              - initial_seed_set: seed set iniziale da cui partire
-              - current_cost: costo del seed set iniziale.
-            Output:
-              - S: target set con costo totale <= budget
-        """
-    """Versione ottimizzata con aggiornamento incrementale e heap."""
+        Input:
+          - G: grafo non orientato (nx.Graph)
+          - budget: somma dei costi del seed set massima totale ammissibile
+          - cost_type: stringa contentente il tipo di costo scelto tra quelli proposti,
+          - sub_function: the submodular function chosen (can be sub_function1, sub_function2, sub_function3)
+          - initial_seed_set: seed set iniziale da cui partire
+          - current_cost: costo del seed set iniziale.
+        Output:
+          - S: target set con costo totale <= budget
+
+    Versione ottimizzata con aggiornamento incrementale e heap."""
     if sub_function not in {sub_function1, sub_function2, sub_function3}:
         raise ValueError("Funzione submodulare non supportata")
 
@@ -108,7 +108,7 @@ def cost_seeds_greedy(
     # Inizializzazione strutture dati
     neighbors_in_S_count: Dict[int, int] = {v: 0 for v in G.nodes}
     current_value = 0
-    total_cost = current_cost
+    total_cost = current_cost  # noqa
     epsilon = 1e-6
 
     # Costruzione set iniziale

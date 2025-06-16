@@ -77,3 +77,4 @@ statistics/output/*.png
 # Datasets
 data/*.txt
 data/*.edgelist
+algorithms/logs/cost2_CSG.csv
