@@ -5,8 +5,6 @@ import math
 import random
 from tqdm import tqdm
 import networkx as nx
-from collections import defaultdict
-import community as community_louvain
 from typing import Dict, Set, Optional, Any
 
 # Percorso del file di salvataggio centralità
@@ -72,14 +70,6 @@ def assign_cost_attributes(G: nx.Graph, use_threshold: bool):  # noqa
         return G, cost1, cost2, cost3, threshold
     else:
         return G, cost1, cost2, cost3
-
-
-def detect_communities(G):  # noqa
-    partition = community_louvain.best_partition(G)
-    communities = defaultdict(list)
-    for node, comm in partition.items():
-        communities[comm].append(node)
-    return partition, communities
 
 
 
