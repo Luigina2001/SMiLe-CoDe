@@ -3,6 +3,8 @@ import sys
 import json
 import networkx as nx
 import community as community_louvain
+from tqdm import tqdm
+import time
 
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if project_root not in sys.path:
@@ -114,14 +116,72 @@ if __name__ == "__main__":
     G = nx.read_edgelist("../data/facebook_combined.txt", nodetype=int)
     G, cost1, cost2, cost3 = assign_cost_attributes(G, use_threshold=False)
 
-    seeds_c1 = SMiLe_CoDe(
-        G,
-        'cost2',
-        max(cost1.values()),
-        centrality_file="./facebook_betweenness.json"
-    )
+    # Configurazioni funzioni di costo e relative descrizioni
+    cost_functions = {
+        "cost1": cost1,
+        "cost2": cost2,
+        "cost3": cost3
+    }
 
-    print(seeds_c1)
-    print(f"Selected seeds: {len(seeds_c1)}")
-    final_influence, rounds = majority_cascade(G, seeds_c1)
-    print(f"Final influence: {len(final_influence)} nodes")
+    descriptions = {
+        "cost1": "cost1: ceiling function of degree(v) / 2",
+        "cost2": "cost2: random int in [min(cost1), max(cost1)]",
+        "cost3": "cost3: scaled log10 of betweenness centrality"
+    }
+
+    for name, cost in cost_functions.items():
+        algorithm_name = "CSG"
+        cost_function_desc = descriptions[name]
+        desc = descriptions[name]
+
+        # Calcolo range del budget
+        min_budget = int(max(cost.values()))
+        """if int(min(cost.values())) > 0:
+            max_budget = int(min(cost.values()) * (len(G.nodes())))
+        else:
+            max_budget = (int(min(cost.values()) + 1) * (len(G.nodes())))"""
+        max_budget = int(sum(cost.values()))
+
+        max_budget = int(sum(cost.values()))
+        if min_budget > max_budget:
+            print(f"MinBudget > MaxBudget for {name}")
+            min_budget, max_budget = max_budget, min_budget
+
+        if min_budget == max_budget:
+            print(f"MinBudget = MaxBudget for {name}")
+            continue
+
+        tqdm.write(f"\n{name} — budget da {min_budget} a {max_budget}")
+
+        for budget_k in tqdm(
+                range(min_budget, max_budget + 1, 100),
+                desc=f"Budget loop for {name}",
+                unit="budget"
+        ):
+            start_time = time.time()
+            S = SMiLe_CoDe(
+                G,
+                name,
+                budget_k,
+                centrality_file="./facebook_betweenness.json"
+            )
+            end_time = time.time()
+
+            total_cost = sum(cost[v] for v in S)
+            exec_time = end_time - start_time
+
+            tqdm.write(f"Function: {name} | Budget: {budget_k}")
+            tqdm.write(f"Seed set size: {len(S)}; Total cost: {total_cost}; Time: {exec_time:.2f}s")
+            log_experiment(
+                csv_path=f"./logs/{name}_SMiLe-CoDe.csv",
+                algorithm_name=algorithm_name,
+                cost_function=cost_function_desc,
+                use_threshold=False,
+                budget=budget_k,
+                seed_set=S,
+                total_cost=total_cost,
+                execution_time=exec_time,
+                G=G,
+                additional_info={"note": f"Running on facebook_combined.txt with {name}"}
+            )
+
