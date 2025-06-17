@@ -11,52 +11,7 @@ if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
 from utils.utils import log_experiment, assign_cost_attributes, ceil_division  # noqa
-
-
-def sub_function1(S: set, G: nx.Graph) -> float:  # noqa
-    """Versione ottimizzata senza loop annidati."""
-    if not S:
-        return 0
-    score = 0
-    for v in G.nodes():
-        deg = G.degree(v)
-        half_deg = ceil_division(deg, 2)
-        neighbors_in_S = len(set(G.neighbors(v)) & S)
-        score += min(neighbors_in_S, half_deg)
-    return score
-
-
-def sub_function2(S: set, G: nx.Graph) -> float:  # noqa
-    """Ottimizzata con formula matematica."""
-    if not S:
-        return 0
-    score = 0
-    for v in G.nodes():
-        deg = G.degree(v)
-        half_deg = ceil_division(deg, 2)
-        neighbors_in_S = len(set(G.neighbors(v)) & S)
-        c = min(neighbors_in_S, half_deg)
-        if c > 0:
-            score += c * half_deg - (c * (c - 1)) // 2
-        if neighbors_in_S > half_deg:
-            score += (half_deg * (half_deg + 1)) // 2
-    return score
-
-
-def sub_function3(S: set, G: nx.Graph) -> float:  # noqa
-    """Ottimizzata riducendo loop interni."""
-    if not S:
-        return 0
-    score = 0
-    for v in G.nodes():
-        deg = G.degree(v)
-        half_deg = ceil_division(deg, 2)
-        neighbors_in_S = len(set(G.neighbors(v)) & S)
-        for i in range(1, min(neighbors_in_S, half_deg) + 1):
-            denom = deg - i + 1
-            if denom > 0:
-                score += (half_deg - i + 1) / denom
-    return score
+from utils.submodular import sub_function1, sub_function2, sub_function3
 
 
 def compute_delta(
@@ -248,9 +203,9 @@ if __name__ == "__main__":
         current_cost = 0
 
         for budget_k in tqdm(
-            range(min_budget, max_budget + 1, 100),
-            desc=f"Budget loop for {name}",
-            unit="budget"
+                range(min_budget, max_budget + 1, 100),
+                desc=f"Budget loop for {name}",
+                unit="budget"
         ):
             start_time = time.time()
             S = cost_seeds_greedy(G, budget_k, name, sub_function1, current_seed_set, current_cost)
