@@ -78,3 +78,6 @@ statistics/output/*.png
 data/*.txt
 data/*.edgelist
 algorithms/logs/cost2_CSG.csv
+algorithms/logs/cascade_results/cost2_CSG_results.csv
+algorithms/logs/cascade_results/cost3_CSG_results.csv
+final_graphs/plots/*.png
