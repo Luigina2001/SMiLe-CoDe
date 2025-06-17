@@ -11,7 +11,6 @@ if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
 from utils.utils import assign_cost_attributes, log_experiment  # noqa
-from algorithms.cascade import majority_cascade
 
 
 def SMiLe_CoDe(G: nx.Graph, cost_attr: str, total_budget: int, centrality_file:str ="./facebook_betweenness.json"):  # noqa
@@ -61,7 +60,6 @@ def SMiLe_CoDe(G: nx.Graph, cost_attr: str, total_budget: int, centrality_file:s
 
         # Creazione di una vista del sotto grafo per la comunità
         comm_nodes = communities[comm_id]
-        subG = G.subgraph(comm_nodes)
 
         # Ordinamento dei nodi per betweenness decrescente (nodi più centrali prima)
         sorted_nodes = sorted(
@@ -95,10 +93,12 @@ def SMiLe_CoDe(G: nx.Graph, cost_attr: str, total_budget: int, centrality_file:s
             key=lambda v: G.nodes[v].get("betweenness", float("inf"))
         )
 
+        candidates = [n for n in all_nodes if n not in seeds]
+
         spent_global = 0
         global_selection_count = 0
-        for node in all_nodes:
-            cost = G.nodes[node].get(cost_attr, float("inf"))
+        for node in candidates:
+            cost = G.nodes[node].get(cost_attr, float("inf"))  # noqa
             if cost <= remaining_budget - spent_global:
                 seeds.append(node)
                 spent_global += cost
@@ -142,7 +142,6 @@ if __name__ == "__main__":
             max_budget = (int(min(cost.values()) + 1) * (len(G.nodes())))"""
         max_budget = int(sum(cost.values()))
 
-        max_budget = int(sum(cost.values()))
         if min_budget > max_budget:
             print(f"MinBudget > MaxBudget for {name}")
             min_budget, max_budget = max_budget, min_budget
