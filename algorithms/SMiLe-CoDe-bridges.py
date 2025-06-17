@@ -13,7 +13,8 @@ if project_root not in sys.path:
 from utils.utils import assign_cost_attributes, log_experiment  # noqa
 
 
-def SMiLe_CoDe(G: nx.Graph, cost_attr: str, total_budget: int, centrality_file:str ="./facebook_betweenness.json"):  # noqa
+def SMiLe_CoDe(G: nx.Graph, cost_attr: str, total_budget: int,  # noqa
+               centrality_file: str = "./facebook_betweenness.json"):  # noqa
     """
         Alloca il budget alle comunità in proporzione alla loro dimensione ed esegue una selezione
         greedy (basata sulla centralità) all'interno di ciascuna comunità.
@@ -72,7 +73,7 @@ def SMiLe_CoDe(G: nx.Graph, cost_attr: str, total_budget: int, centrality_file:s
         selected_in_comm = []
         spent_in_comm = 0
         for node in sorted_nodes:
-            cost = G.nodes[node].get(cost_attr, float("inf"))
+            cost = G.nodes[node].get(cost_attr, float("inf"))  # noqa
             if cost > local_budget - spent_in_comm:  # Se il costo supera il budget rimanente
                 continue
             if cost + spent_in_comm <= local_budget:
@@ -93,7 +94,10 @@ def SMiLe_CoDe(G: nx.Graph, cost_attr: str, total_budget: int, centrality_file:s
 
         bridge_nodes = set()
         for t in local_bridges:
-            node = max(G.nodes[t[0]].get("betweenness", float("inf")),G.nodes[t[1]].get("betweenness", float("inf")))
+            n1, n2 = t[0], t[1]
+            b1 = G.nodes[n1].get("betweenness", float("inf"))
+            b2 = G.nodes[n2].get("betweenness", float("inf"))
+            node = n1 if b1 >= b2 else n2
             bridge_nodes.add(node)
 
         bridge_nodes = sorted(
@@ -118,9 +122,9 @@ def SMiLe_CoDe(G: nx.Graph, cost_attr: str, total_budget: int, centrality_file:s
         if remaining_budget > 0:
             print(f"Remaining budget: {remaining_budget}, selecting globally...")
             all_nodes = sorted(
-            G.nodes(),
-            key=lambda v: G.nodes[v].get("betweenness", float("inf"))
-        )
+                G.nodes(),
+                key=lambda v: G.nodes[v].get("betweenness", float("inf"))
+            )
             candidates = [n for n in all_nodes if n not in seeds]
 
             spent_global = 0
@@ -211,4 +215,3 @@ if __name__ == "__main__":
                 G=G,
                 additional_info={"note": f"Running on facebook_combined.txt with {name}"}
             )
-
