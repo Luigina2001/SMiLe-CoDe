@@ -30,6 +30,8 @@ def assign_cost_attributes(G: nx.Graph, use_threshold: bool):  # noqa
     random_min_range = min(cost1.values())
     random_max_range = max(cost1.values())
 
+    random.seed(42)
+
     for v in tqdm(G.nodes(), desc="Assigning random cost2"):
         cost2[v] = random.randint(random_min_range, random_max_range)
 
