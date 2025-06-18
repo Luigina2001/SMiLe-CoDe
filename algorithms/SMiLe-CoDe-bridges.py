@@ -13,6 +13,8 @@ if project_root not in sys.path:
 from utils.utils import assign_cost_attributes, log_experiment  # noqa
 
 
+BRIDGE_FILE = './facebook_local_bridges.json'
+
 def SMiLe_CoDe(G: nx.Graph, cost_attr: str, total_budget: int,  # noqa
                centrality_file: str = "./facebook_betweenness.json"):  # noqa
     """
@@ -90,8 +92,18 @@ def SMiLe_CoDe(G: nx.Graph, cost_attr: str, total_budget: int,  # noqa
     if remaining_budget > 0:
         print(f"Remaining budget: {remaining_budget}, selecting globally...")
 
-        local_bridges = set(nx.local_bridges(G))
+        if os.path.exists(BRIDGE_FILE):
+            print("Loading local bridges from file...")
+            with open(BRIDGE_FILE, "r") as f:
+                local_bridges = [tuple(edge) for edge in json.load(f)]
+        else:
+            print("Computing local bridges...")
+            local_bridges = list(nx.local_bridges(G))
+            with open(BRIDGE_FILE, "w") as f:
+                json.dump([list(edge) for edge in local_bridges], f)
+            print("Local bridges saved on disk.")
 
+        local_bridges = set(local_bridges)
         bridge_nodes = set()
         for t in local_bridges:
             n1, n2 = t[0], t[1]
@@ -150,8 +162,8 @@ if __name__ == "__main__":
 
     # Configurazioni funzioni di costo e relative descrizioni
     cost_functions = {
-        "cost1": cost1,
-        "cost2": cost2,
+        # "cost1": cost1,
+        # "cost2": cost2,
         "cost3": cost3
     }
 
@@ -209,7 +221,7 @@ if __name__ == "__main__":
                 cost_function=cost_function_desc,
                 use_threshold=False,
                 budget=budget_k,
-                seed_set=S,
+                seed_set=set(S),
                 total_cost=total_cost,
                 execution_time=exec_time,
                 G=G,
