@@ -96,9 +96,9 @@ if __name__ == "__main__":
 
     # Configurazioni funzioni di costo e relative descrizioni
     cost_functions = {
-        "cost1": cost1,
+        # "cost1": cost1,
         "cost2": cost2,
-        "cost3": cost3
+        # "cost3": cost3
     }
 
     descriptions = {
@@ -106,6 +106,7 @@ if __name__ == "__main__":
         "cost2": "cost2: random int in [min(cost1), max(cost1)]",
         "cost3": "cost3: scaled log10 of betweenness centrality"
     }
+
 
     for name, cost in cost_functions.items():
         algorithm_name = "WTSS"
@@ -127,6 +128,10 @@ if __name__ == "__main__":
             continue
 
         print(f"\n{name} — budget from {min_budget} to {max_budget}")
+
+        early_stop_counter = 0
+        max_no_change = 5
+        prev_seed_set = set()
 
         for budget_k in tqdm(
                 range(min_budget, max_budget + 1, 100),
@@ -157,3 +162,13 @@ if __name__ == "__main__":
                 G=G,
                 additional_info={"note": f"Running on facebook_combined.txt with {name}"}
             )
+
+            if set(S) == prev_seed_set:
+                early_stop_counter += 1
+            else:
+                early_stop_counter = 0
+                prev_seed_set = set(S)
+
+            if early_stop_counter >= max_no_change:
+                print(f"Early stopping triggered after {early_stop_counter} unchanged iterations.")
+                break
