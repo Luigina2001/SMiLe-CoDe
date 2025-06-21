@@ -72,7 +72,7 @@ def SMiLe_CoDe(G: nx.Graph, cost_attr: str, total_budget: int, centrality_file:s
         selected_in_comm = []
         spent_in_comm = 0
         for node in sorted_nodes:
-            cost = G.nodes[node].get(cost_attr, float("inf"))
+            cost = G.nodes[node].get(cost_attr, float("inf"))  # noqa
             if cost > local_budget - spent_in_comm:  # Se il costo supera il budget rimanente
                 continue
             if cost + spent_in_comm <= local_budget:
@@ -177,10 +177,9 @@ if __name__ == "__main__":
                 cost_function=cost_function_desc,
                 use_threshold=False,
                 budget=budget_k,
-                seed_set=S,
+                seed_set=set(S),
                 total_cost=total_cost,
                 execution_time=exec_time,
                 G=G,
                 additional_info={"note": f"Running on facebook_combined.txt with {name}"}
             )
-
