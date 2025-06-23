@@ -194,6 +194,8 @@ def plot_budget_vs_influence(df, title, save_path):
 
         plt.title(title, pad=20)
 
+    plt.xlim(0, 900000)
+
     plt.xlabel("Budget", fontsize=12, labelpad=10)
     plt.ylabel("Influenza Media Finale", fontsize=12, labelpad=10)
     ax = plt.gca()
@@ -412,7 +414,7 @@ def main():
         fname += ".png"
         save_path = os.path.join(PLOTS_DIR, fname)
 
-        # plot_budget_vs_influence(df, title, save_path)
+        plot_budget_vs_influence(df, title, save_path)
 
         base_name = ""
         title = ""
@@ -424,7 +426,7 @@ def main():
             base_name += f"cost{args.cost}"
 
         # plot_execution_time_comparison(df, title, os.path.join(PLOTS_DIR, f"{base_name}_execution_time.png"))
-        plot_budget_vs_seed_size(df, title, os.path.join(PLOTS_DIR, f"{base_name}_budget_vs_seeds.png"))
+        # plot_budget_vs_seed_size(df, title, os.path.join(PLOTS_DIR, f"{base_name}_budget_vs_seeds.png"))
         # plot_influence_distribution(df, title, os.path.join(PLOTS_DIR, f"{base_name}_influence_dist.png"))
 
     except Exception as e:
