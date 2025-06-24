@@ -2,10 +2,15 @@
     <img src="./assets/SMiLe-CoDe_logo_noBG.png" alt="SMiLe-CoDe logo" width="300"/>
 </div>
 <div align="center">
-
-<h1> SMiLe-CoDe <br> Heuristic seed-set selection for Majority Cascade in social networks </h1>
-
- [Luigina Costante](https://github.com/Luigina2001), [Salvatore Michele De Luca](https://github.com/SalvatoreDL01)
+  <h1 style="margin-bottom: 0.2em;">SMiLe-CoDe</h1>
+  <p style="font-size: 1.2em; font-style: italic; margin-top: 0;">
+    Heuristic seed-set selection for Majority Cascade in social networks
+  </p>
+  <p style="margin-top: 1em;">
+    <a href="https://github.com/Luigina2001" target="_blank">Luigina Costante</a>
+    &nbsp;•&nbsp;
+    <a href="https://github.com/SalvatoreDL01" target="_blank">Salvatore Michele De Luca</a>
+  </p>
 </div>
 
 # Introduction
