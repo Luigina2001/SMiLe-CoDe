@@ -194,7 +194,7 @@ def plot_budget_vs_influence(df, title, save_path):
 
         plt.title(title, pad=20)
 
-    plt.xlim(0, 900000)
+    # plt.xlim(0, 100000)
 
     plt.xlabel("Budget", fontsize=12, labelpad=10)
     plt.ylabel("Influenza Media Finale", fontsize=12, labelpad=10)
@@ -322,6 +322,7 @@ def plot_budget_vs_seed_size(df, title, save_path):
 
         # Formattazione del grafico
         plt.title(f"{title}\nRelazione Budget - Dimensione Seed Set", pad=20)
+        # plt.xlim(0, 120000)
         plt.xlabel("Budget", fontsize=12)
         plt.ylabel("Numero di Seed", fontsize=12)
         plt.grid(True, linestyle='--', alpha=0.4)
@@ -362,7 +363,6 @@ def plot_influence_distribution(df, title, save_path):
         print(f"Grafico salvato in: {save_path}")
 
 
-
 def main():
     parser = argparse.ArgumentParser(
         description="Grafico: final_influence_size in funzione del budget."
@@ -392,6 +392,14 @@ def main():
             on=["experiment_result_row", "algorithm", "cost"],
             how="inner"
         ).drop_duplicates()
+
+        '''
+        # DEBUG VALORE ANOMALO WTSS Cost2
+        df_filtered = df[(df['algorithm'] == 'WTSS') & (df['cost'] == 2)]
+        df_filtered = df_filtered.sort_values(by='budget')
+
+        print("Primo punto per WTSS con cost 2:")
+        print(df_filtered.head(1)) '''
 
         # DEBUG: campiona fino a 50 righe se richiesto
         if os.getenv("DEBUG") == "1":
@@ -426,7 +434,7 @@ def main():
             base_name += f"cost{args.cost}"
 
         # plot_execution_time_comparison(df, title, os.path.join(PLOTS_DIR, f"{base_name}_execution_time.png"))
-        # plot_budget_vs_seed_size(df, title, os.path.join(PLOTS_DIR, f"{base_name}_budget_vs_seeds.png"))
+        plot_budget_vs_seed_size(df, title, os.path.join(PLOTS_DIR, f"{base_name}_budget_vs_seeds.png"))
         # plot_influence_distribution(df, title, os.path.join(PLOTS_DIR, f"{base_name}_influence_dist.png"))
 
     except Exception as e:
